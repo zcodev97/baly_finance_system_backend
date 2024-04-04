@@ -149,9 +149,11 @@ class VendorPaymentsSummaryAPI(generics.ListCreateAPIView):
 
         query = f"""
            SELECT * FROM `peak-brook-355811.food_prod_public.vendor_payment`
-           WHERE order_date BETWEEN '{start_date} 00:00:00' AND '{end_date} 23:59:00'
+           WHERE order_date BETWEEN '{start_date} 00:00:00' AND '{end_date} 23:59:59'
            """
         df = pandas_gbq.read_gbq(query, project_id='peak-brook-355811')
+
+        print(query)
 
         # Replace NaN (null in DataFrame) with None for direct JSON serialization
         df.replace({np.nan: None}, inplace=True)
@@ -170,7 +172,6 @@ class VendorPaymentsSummaryAPI(generics.ListCreateAPIView):
         # Merge with the orders data
         grouped_sum = pd.merge(grouped_sum, orders_by_vendor, on='vendor_id')
 
-        # Fetch additional vendor details from the Django model
         # Fetch additional vendor details from the Django model
         vendors = Vendor.objects.prefetch_related('pay_period', 'pay_type').in_bulk(field_name='id')
         vendor_details = {vendor.vendor_id: {
@@ -197,26 +198,26 @@ class VendorPaymentsSummaryAPI(generics.ListCreateAPIView):
                 existing_orders = Payment.objects.filter(
                     vendor_id=item.vendor_id
                 ).values_list('orders', flat=True)
-                # existing_order_ids = set([order['order_id'] for order_list in existing_orders for order in
-                # order_list])
 
-                # Filter new orders to include only those not already in existing_order_ids
-                new_orders = [order['order_id'] for order in item.orders if order['order_id'] not in existing_orders]
-                new_orders = [
+                new_orders = [order for order in item.orders if order['order_id'] not in existing_orders]
+
+                new_orders_list = [
                     {
                         'order_id': order['order_id'],
                         'order_date': order['order_date'],
                         'subtotal': order['subtotal']
                     }
-                    for order in item.orders if order['order_id'] not in existing_orders
+                    for order in new_orders
                 ]
+
+
                 result_item = {
                     **item._asdict(),
                     **vendor_info,
                     'start_date': start_date,
                     'end_date': end_date,
                     'is_paid': False,
-                    'orders': new_orders,  # Updated orders list
+                    'orders': new_orders_list,  # Updated orders list
                 }
                 final_results.append(result_item)
 

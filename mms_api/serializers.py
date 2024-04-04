@@ -30,11 +30,21 @@ class PaymentCycleSerializer(serializers.ModelSerializer):
 class VendorSerializer(serializers.ModelSerializer):
     pay_period = PaymentCycleSerializer(read_only=True)  # Assuming this is your payment_cycle serializer
     pay_type = PaymentMethodSerializer(read_only=True)  # Assuming this is your payment_method serializer
+    account_manager_name = serializers.SerializerMethodField()  # Use SerializerMethodField
 
     class Meta:
         model = Vendor
         fields = ['vendor_id', 'name', 'pay_period', 'pay_type', 'number',
-                  'owner_name', 'owner_phone', 'fully_refunded', 'penalized']
+                  'owner_name', 'owner_phone', 'fully_refunded', 'penalized',
+                  'account_manager_name', 'created_at','owner_email'
+                  ]
+
+    def get_account_manager_name(self, obj):
+        # Check if account_manager is set, handle potential None values
+        if obj.account_manager:
+            return obj.account_manager.username  # Access the username attribute
+        else:
+            return None  # Return None or a default value if account_manager is missing
 
 
 class PaymentSerializer(serializers.ModelSerializer):

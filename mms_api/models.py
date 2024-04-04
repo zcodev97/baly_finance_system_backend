@@ -31,9 +31,11 @@ class Vendor(models.Model):
     number = models.CharField(max_length=255, blank=True)
     owner_name = models.CharField(max_length=255)
     owner_phone = models.CharField(max_length=255)
+    owner_email = models.CharField(max_length=255)
     fully_refunded = models.BooleanField()
     penalized = models.BooleanField()
     created_at = models.DateTimeField(auto_now=True)
+    log  = models.JSONField()
     account_manager = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='account_manager')
     created_by = models.ForeignKey(

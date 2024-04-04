@@ -140,8 +140,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ORIGIN_ALLOW_ALL = True
 AUTH_USER_MODEL = "core.User"
 
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 20000 # higher than the count of fields
-
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000000 # higher than the count of fields
+# DATA_UPLOAD_MAX_MEMORY_SIZE = 100000000
 
 # rest framework config
 REST_FRAMEWORK = {

@@ -6,6 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="2c9eecc9-9829-419c-a229-ad459bc4d677" name="Changes" comment="first init">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mms/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/mms/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mms_api/apiviews.py" beforeDir="false" afterPath="$PROJECT_DIR$/mms_api/apiviews.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mms_api/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/mms_api/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mms_api/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/mms_api/serializers.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -85,8 +89,8 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.main" />
       <item itemvalue="Python.runserver" />
+      <item itemvalue="Python.main" />
     </list>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
