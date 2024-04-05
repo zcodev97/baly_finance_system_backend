@@ -36,7 +36,7 @@ class VendorSerializer(serializers.ModelSerializer):
         model = Vendor
         fields = ['vendor_id', 'name', 'pay_period', 'pay_type', 'number',
                   'owner_name', 'owner_phone', 'fully_refunded', 'penalized',
-                  'account_manager_name', 'created_at','owner_email'
+                  'account_manager_name', 'created_at','owner_email','log'
                   ]
 
     def get_account_manager_name(self, obj):

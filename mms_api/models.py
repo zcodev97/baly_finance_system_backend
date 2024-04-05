@@ -35,7 +35,7 @@ class Vendor(models.Model):
     fully_refunded = models.BooleanField()
     penalized = models.BooleanField()
     created_at = models.DateTimeField(auto_now=True)
-    log  = models.JSONField()
+    log = models.JSONField()
     account_manager = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='account_manager')
     created_by = models.ForeignKey(
