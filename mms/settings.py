@@ -85,16 +85,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mms.wsgi.application'
 
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 
 DATABASES = {
     'default': {
@@ -140,7 +130,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ORIGIN_ALLOW_ALL = True
 AUTH_USER_MODEL = "core.User"
 
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000000 # higher than the count of fields
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000000  # higher than the count of fields
 # DATA_UPLOAD_MAX_MEMORY_SIZE = 100000000
 
 # rest framework config
@@ -168,8 +158,6 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,
     # OTHER SETTINGS
 }
-
-
 
 
 SIMPLE_JWT = {
@@ -211,4 +199,7 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer",
     "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }
-
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    # Add other trusted origins if needed
+]

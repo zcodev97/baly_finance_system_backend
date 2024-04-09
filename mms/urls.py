@@ -2,13 +2,12 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from mms_api.apiviews import (VendorAPI, UploadVendorsAsExcel,CreatePaymentAPI,
-                              PaymentAPI, PaymentCycleAPI, PaymentMethodAPI
-, VendorPaymentsSummaryAPI
-                              )
+from mms_api.apiviews import (VendorAPI, UploadVendorsAsExcel, CreatePaymentAPI,
+                              PaymentAPI, PaymentCycleAPI, PaymentMethodAPI,
+                              VendorPaymentsSummaryAPI, VendorIdNameAPI, UpdateVendorAPI)
 from core.serializers import CustomUserSerializer
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
-
+from core.apiviews import UsersListAPI
 from rest_framework.authtoken import views
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -41,19 +40,29 @@ urlpatterns = [
     # YOUR PATTERNS
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     # Optional UI:
-    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    path('api/schema/swagger-ui/',
+         SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/schema/redoc/',
+         SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     # mms api
     # all vendors
     path('vendors/', VendorAPI.as_view(), name="all vendors"),
+    path('update_vendor/<int:vendor_id>',
+         UpdateVendorAPI.as_view(), name="update vendor"),
     path('payment_cycles/', PaymentCycleAPI.as_view(), name="all cycles"),
     path('payment_methods/', PaymentMethodAPI.as_view(), name="all methods"),
     path('payments/', PaymentAPI.as_view(), name="all Payments"),
-    path('create_payment/', CreatePaymentAPI.as_view(), name="create new Payments"),
+    path('create_payment/', CreatePaymentAPI.as_view(),
+         name="create new Payments"),
+    path('get_vendor_id_name/', VendorIdNameAPI.as_view(),
+         name="vendor id name only"),
 
-    path('upload_vendors_as_excel/', UploadVendorsAsExcel.as_view(), name="all vendors"),
+    path('upload_vendors_as_excel/',
+         UploadVendorsAsExcel.as_view(), name="all vendors"),
     # payment summary
-    path('vendor-payments-summary/', VendorPaymentsSummaryAPI.as_view(), name='vendor-payments-summary'),
+    path('vendor-payments-summary/', VendorPaymentsSummaryAPI.as_view(),
+         name='vendor-payments-summary'),
+    path('account_managers/', UsersListAPI.as_view(), name='account_managers'),
 
     # path('create_deposit/', DepositCreateAPI.as_view(), name="create deposit"),
     # path('withdraws/', WithdrawAPI.as_view(), name="withdraw"),
@@ -89,4 +98,5 @@ urlpatterns = [
 ]
 # Configure URL patterns for serving media files during development
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)

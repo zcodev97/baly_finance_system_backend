@@ -12,7 +12,7 @@ import pandas_gbq
 class VendorAdmin(admin.ModelAdmin):
     list_per_page = 5  # Items per page
     ordering = ('-created_at',)  # Default ordering
-    search_fields = ['1693']  # Fields to search by
+    search_fields = ['vendor_id']  # Fields to search by
     list_display = [ 'vendor_id','name','number']
 
 

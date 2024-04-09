@@ -5,7 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2c9eecc9-9829-419c-a229-ad459bc4d677" name="Changes" comment="first init">
+      <change afterPath="$PROJECT_DIR$/core/apiviews.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mms/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/mms/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mms_api/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/mms_api/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mms_api/apiviews.py" beforeDir="false" afterPath="$PROJECT_DIR$/mms_api/apiviews.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mms_api/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/mms_api/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mms_api/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/mms_api/serializers.py" afterDir="false" />
     </list>
@@ -35,11 +39,12 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/baly finance system/baly_finance_system_backend/manage.py&quot;
+    &quot;last_opened_file_path&quot;: &quot;D:/baly finance system/baly_finance_system_backend/core&quot;
   }
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\baly finance system\baly_finance_system_backend\core" />
       <recent name="$PROJECT_DIR$/core" />
     </key>
   </component>
@@ -87,8 +92,8 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.runserver" />
       <item itemvalue="Python.main" />
+      <item itemvalue="Python.runserver" />
     </list>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />

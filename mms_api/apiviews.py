@@ -6,11 +6,15 @@ from rest_framework.response import Response
 from rest_framework import generics, status
 from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
-from .models import (Vendor, Payment, PaymentCycle, PaymentMethod, PaidOrders)
-from .serializers import (VendorSerializer, PaymentSerializer, PaymentCycleSerializer
-, CreatePaymentSerializer,
-                          PaidOrdersSerializer,
-                          PaymentMethodSerializer)
+from .models import (Vendor, Payment, PaymentCycle,
+                     PaymentMethod, PaidOrders, VendorUpdates)
+from .serializers import (VendorSerializer, PaymentSerializer,
+                          PaymentCycleSerializer, CreatePaymentSerializer,
+                          VendorIDNameSerializer, PaidOrdersSerializer,
+                          PaymentMethodSerializer,
+                          VendorIDNameSerializer, VendorUpdateSerializer,
+                          GetVendorUpdatesSerializer, CreateVendorUpdateSerializer)
+
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
@@ -22,6 +26,30 @@ import pandas_gbq
 import numpy as np
 from django.db.models import Q
 from rest_framework.exceptions import ValidationError
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
+
+
+class GetVendorUpdatesAPI(generics.ListCreateAPIView):
+    queryset = VendorUpdates.objects.all()
+    serializer_class = VendorUpdateSerializer
+    permission_classes = [IsAuthenticated, DjangoModelPermissions]
+
+
+class VendorIdNameAPI(generics.ListCreateAPIView):
+    queryset = Vendor.objects.all()
+    serializer_class = VendorIDNameSerializer
+    permission_classes = [IsAuthenticated, DjangoModelPermissions]
+    paginator = PageNumberPagination()
+    paginator.page_size = None
+
+
+class VendorIdNameAPI(generics.ListCreateAPIView):
+    queryset = Vendor.objects.all()
+    serializer_class = VendorIDNameSerializer
+    permission_classes = [IsAuthenticated, DjangoModelPermissions]
+    paginator = PageNumberPagination()
+    paginator.page_size = None  # Set page size to None to disable pagination
 
 
 class PaymentMethodAPI(generics.ListCreateAPIView):
@@ -39,6 +67,17 @@ class PaymentCycleAPI(generics.ListCreateAPIView):
 class VendorAPI(generics.ListCreateAPIView):
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer
+    permission_classes = [IsAuthenticated, DjangoModelPermissions]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.order_by('vendor_id')  # Order by vendor_id
+
+
+class UpdateVendorAPI(generics.RetrieveUpdateAPIView):
+    lookup_field = 'vendor_id'
+    queryset = Vendor.objects.all()
+    serializer_class = VendorUpdateSerializer
     permission_classes = [IsAuthenticated, DjangoModelPermissions]
 
 
@@ -111,7 +150,8 @@ class UploadVendorsAsExcel(generics.ListCreateAPIView):
                 pay_period = row['pay_period']
 
                 #               get account manager id
-                account_manager_id = User.objects.get(username=account_manager).id
+                account_manager_id = User.objects.get(
+                    username=account_manager).id
                 pay_type_id = PaymentMethod.objects.get(title=pay_type).id
                 pay_period_id = PaymentCycle.objects.get(title=pay_period).id
 
@@ -160,11 +200,14 @@ class VendorPaymentsSummaryAPI(generics.ListCreateAPIView):
 
         # Calculate the count of orders for each vendor and aggregate order details
         df['order_details'] = df.apply(lambda row: row.to_dict(), axis=1)
-        orders_by_vendor = df.groupby('vendor_id')['order_details'].apply(list).reset_index(name='orders')
-        order_counts = df.groupby('vendor_id')['order_id'].count().reset_index(name='order_count')
+        orders_by_vendor = df.groupby('vendor_id')['order_details'].apply(
+            list).reset_index(name='orders')
+        order_counts = df.groupby('vendor_id')[
+            'order_id'].count().reset_index(name='order_count')
 
         # Group and sum the `to_be_paid` column by vendor
-        grouped_sum = df.groupby('vendor_id', as_index=False)['to_be_paid'].sum()
+        grouped_sum = df.groupby('vendor_id', as_index=False)[
+            'to_be_paid'].sum()
 
         # Merge the sum DataFrame with the order counts DataFrame
         grouped_sum = pd.merge(grouped_sum, order_counts, on='vendor_id')
@@ -173,7 +216,8 @@ class VendorPaymentsSummaryAPI(generics.ListCreateAPIView):
         grouped_sum = pd.merge(grouped_sum, orders_by_vendor, on='vendor_id')
 
         # Fetch additional vendor details from the Django model
-        vendors = Vendor.objects.prefetch_related('pay_period', 'pay_type').in_bulk(field_name='id')
+        vendors = Vendor.objects.prefetch_related(
+            'pay_period', 'pay_type').in_bulk(field_name='id')
         vendor_details = {vendor.vendor_id: {
             'vendor_id': vendor.vendor_id,
             'vendor': vendor.name,
@@ -199,7 +243,8 @@ class VendorPaymentsSummaryAPI(generics.ListCreateAPIView):
                     vendor_id=item.vendor_id
                 ).values_list('orders', flat=True)
 
-                new_orders = [order for order in item.orders if order['order_id'] not in existing_orders]
+                new_orders = [
+                    order for order in item.orders if order['order_id'] not in existing_orders]
 
                 new_orders_list = [
                     {
@@ -209,7 +254,6 @@ class VendorPaymentsSummaryAPI(generics.ListCreateAPIView):
                     }
                     for order in new_orders
                 ]
-
 
                 result_item = {
                     **item._asdict(),
