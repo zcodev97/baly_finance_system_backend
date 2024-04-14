@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (Vendor, Payment,
-                     PaymentCycle, PaidOrders, PaymentMethod)
+                     PaymentCycle, PaidOrders, PaymentMethod, VendorUpdates)
 from django.utils.html import format_html
 
 import datetime
@@ -8,12 +8,20 @@ import pandas as pd
 import pandas_gbq
 
 
+@admin.register(VendorUpdates)
+class VendorUpdatesAdmin(admin.ModelAdmin):
+    list_per_page = 5  # Items per page
+    ordering = ('-created_at',)  # Default ordering
+    search_fields = ['vendor_id']  # Fields to search by
+    list_display = ['vendor_id']
+
+
 @admin.register(Vendor)
 class VendorAdmin(admin.ModelAdmin):
     list_per_page = 5  # Items per page
     ordering = ('-created_at',)  # Default ordering
     search_fields = ['vendor_id']  # Fields to search by
-    list_display = [ 'vendor_id','name','number']
+    list_display = ['vendor_id', 'name', 'number']
 
 
 @admin.register(Payment)
@@ -21,7 +29,8 @@ class PaymentAdmin(admin.ModelAdmin):
     list_per_page = 5  # Items per page
     ordering = ('-created_at',)  # Default ordering
     search_fields = ['vendor_id']  # Fields to search by
-    list_display = [field.name for field in Payment._meta.get_fields() if field.name != 'id' and field.name != 'orders']
+    list_display = [field.name for field in Payment._meta.get_fields(
+    ) if field.name != 'id' and field.name != 'orders']
 
     # def save_model(self, request, obj, form, change):
     #     # Execute SQL query and load data into DataFrame
@@ -88,7 +97,8 @@ class PaidOrdersAdmin(admin.ModelAdmin):
     list_per_page = 25  # Items per page
     ordering = ('-created_at',)  # Default ordering
     search_fields = ['payment_id']  # Fields to search by
-    list_display = [field.name for field in PaidOrders._meta.get_fields() if field.name != 'id']
+    list_display = [
+        field.name for field in PaidOrders._meta.get_fields() if field.name != 'id']
 
     def formatted_price_dinar(self, obj):
         return format_html(f"IQD {obj.amount:,.0f}")

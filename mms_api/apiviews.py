@@ -14,7 +14,7 @@ from .serializers import (VendorSerializer, PaymentSerializer,
                           PaymentMethodSerializer,
                           VendorIDNameSerializer, VendorUpdateSerializer,
                           GetVendorUpdatesSerializer, CreateVendorUpdateSerializer)
-
+from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
@@ -31,14 +31,19 @@ from rest_framework.response import Response
 
 
 class GetVendorUpdatesAPI(generics.ListCreateAPIView):
-    queryset = VendorUpdates.objects.all()
-    serializer_class = VendorUpdateSerializer
+    serializer_class = GetVendorUpdatesSerializer
     permission_classes = [IsAuthenticated, DjangoModelPermissions]
 
+    def get_queryset(self):
+        # Assuming you're passing vendor_id as a URL parameter
+        vendor_id = self.kwargs.get('pk')
+        queryset = VendorUpdates.objects.filter(vendor_id=vendor_id)
+        return queryset
 
-class VendorIdNameAPI(generics.ListCreateAPIView):
-    queryset = Vendor.objects.all()
-    serializer_class = VendorIDNameSerializer
+
+class CreateVendorUpdateAPI(generics.ListCreateAPIView):
+    queryset = VendorUpdates.objects.all()
+    serializer_class = CreateVendorUpdateSerializer
     permission_classes = [IsAuthenticated, DjangoModelPermissions]
     paginator = PageNumberPagination()
     paginator.page_size = None
@@ -49,7 +54,18 @@ class VendorIdNameAPI(generics.ListCreateAPIView):
     serializer_class = VendorIDNameSerializer
     permission_classes = [IsAuthenticated, DjangoModelPermissions]
     paginator = PageNumberPagination()
-    paginator.page_size = None  # Set page size to None to disable pagination
+    paginator.page_size = None
+
+
+class VendorByIdAPI(generics.ListCreateAPIView):
+    serializer_class = VendorSerializer
+    permission_classes = [IsAuthenticated, DjangoModelPermissions]
+
+    def get_queryset(self):
+        # Assuming you're passing vendor_id as a URL parameter
+        vendor_id = self.kwargs.get('pk')
+        queryset = Vendor.objects.filter(vendor_id=vendor_id)
+        return queryset
 
 
 class PaymentMethodAPI(generics.ListCreateAPIView):

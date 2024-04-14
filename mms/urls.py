@@ -4,7 +4,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 from mms_api.apiviews import (VendorAPI, UploadVendorsAsExcel, CreatePaymentAPI,
                               PaymentAPI, PaymentCycleAPI, PaymentMethodAPI,
-                              VendorPaymentsSummaryAPI, VendorIdNameAPI, UpdateVendorAPI)
+                              VendorPaymentsSummaryAPI, VendorIdNameAPI,
+                              UpdateVendorAPI, VendorByIdAPI, GetVendorUpdatesAPI, CreateVendorUpdateAPI)
 from core.serializers import CustomUserSerializer
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from core.apiviews import UsersListAPI
@@ -47,6 +48,11 @@ urlpatterns = [
     # mms api
     # all vendors
     path('vendors/', VendorAPI.as_view(), name="all vendors"),
+    path('vendor/<int:pk>', VendorByIdAPI.as_view(), name="single vendor"),
+    path('create_vendor_update_log/', CreateVendorUpdateAPI.as_view(),
+         name="create vendor update"),
+    path('vendor_update_logs/<int:pk>', GetVendorUpdatesAPI.as_view(),
+         name="get vendor updates log"),
     path('update_vendor/<int:vendor_id>',
          UpdateVendorAPI.as_view(), name="update vendor"),
     path('payment_cycles/', PaymentCycleAPI.as_view(), name="all cycles"),
