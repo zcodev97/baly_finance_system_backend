@@ -49,6 +49,7 @@ class Vendor(models.Model):
 class VendorUpdates(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     vendor_id = models.CharField(max_length=255)
+    vendor_name = models.CharField(max_length=255)
     old_payment_method = models.CharField(max_length=255)
     new_payment_method = models.CharField(max_length=255)
     old_payment_cycle = models.CharField(max_length=255)

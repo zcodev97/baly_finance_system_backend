@@ -39,7 +39,7 @@ class GetVendorUpdatesSerializer(serializers.ModelSerializer):
 class CreateVendorUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = VendorUpdates
-        fields = ['vendor_id', 'old_payment_method', 'new_payment_method', 'old_payment_cycle', 'new_payment_cycle', 'old_number', 'new_number',
+        fields = ['vendor_id', 'vendor_name', 'old_payment_method', 'new_payment_method', 'old_payment_cycle', 'new_payment_cycle', 'old_number', 'new_number',
                   'old_receiver_name', 'new_receiver_name',
                   'old_owner_phone', 'new_owner_phone', 'old_account_manager', 'new_account_manager',
                   'old_fully_refended', 'new_fully_refended',

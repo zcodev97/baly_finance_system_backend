@@ -19,8 +19,6 @@ from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
 from core.models import User
-from django.utils.html import format_html
-import datetime
 import pandas as pd
 import pandas_gbq
 import numpy as np
@@ -28,14 +26,24 @@ from django.db.models import Q
 from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from django.core.mail import send_mail
 
 
 class GetVendorUpdatesAPI(generics.ListCreateAPIView):
+    queryset = VendorUpdates.objects.all().order_by('-created_at')
+    serializer_class = GetVendorUpdatesSerializer
+    permission_classes = [IsAuthenticated, DjangoModelPermissions]
+
+    # def get_queryset(self):
+    #     queryset = super().get_queryset()
+    #     return queryset.order_by('created_at')  # Order by vendor_id
+
+
+class GetSingleVendorUpdatesAPI(generics.ListCreateAPIView):
     serializer_class = GetVendorUpdatesSerializer
     permission_classes = [IsAuthenticated, DjangoModelPermissions]
 
     def get_queryset(self):
-        # Assuming you're passing vendor_id as a URL parameter
         vendor_id = self.kwargs.get('pk')
         queryset = VendorUpdates.objects.filter(vendor_id=vendor_id)
         return queryset
@@ -47,6 +55,26 @@ class CreateVendorUpdateAPI(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated, DjangoModelPermissions]
     paginator = PageNumberPagination()
     paginator.page_size = None
+
+    def perform_create(self, serializer):
+        # Save the new object
+        instance = serializer.save()
+
+        # Construct email subject and message
+        subject = 'New Vendor Update Created'
+        message = f"A new vendor update has been created with details:\n\n{
+            serializer.data}"
+
+        # Send email
+        # Replace with client's email address
+        recipient_list = ['zakarya.bilal@baly.iq', 'omar.mahir@baly.iq']
+        send_mail(
+            subject,
+            message,
+            'zakarya.bilal@baly.iq',
+            recipient_list,
+            fail_silently=False,
+        )
 
 
 class VendorIdNameAPI(generics.ListCreateAPIView):
