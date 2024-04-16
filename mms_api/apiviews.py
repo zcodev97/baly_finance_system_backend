@@ -104,7 +104,7 @@ class CreateVendorUpdateAPI(generics.ListCreateAPIView):
         df_table = pd.DataFrame(table_data)
 
         # Convert DataFrame to HTML table
-        df_html = df_table.to_html( index=False, escape=False)
+        df_html = df_table.to_html(index=False, escape=False)
 
         vendor_name = df.loc[0, 'vendor_name']
         vendor_id = df.loc[0, 'vendor_id']
