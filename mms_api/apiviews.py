@@ -6,6 +6,9 @@ from rest_framework.response import Response
 from rest_framework import generics, status
 from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
+import pandas as pd
+from django.template.loader import render_to_string
+
 from .models import (Vendor, Payment, PaymentCycle,
                      PaymentMethod, PaidOrders, VendorUpdates)
 from .serializers import (VendorSerializer, PaymentSerializer,
@@ -45,7 +48,8 @@ class GetSingleVendorUpdatesAPI(generics.ListCreateAPIView):
 
     def get_queryset(self):
         vendor_id = self.kwargs.get('pk')
-        queryset = VendorUpdates.objects.filter(vendor_id=vendor_id)
+        queryset = VendorUpdates.objects.filter(
+            vendor_id=vendor_id).order_by('-created_at')
         return queryset
 
 
@@ -60,19 +64,70 @@ class CreateVendorUpdateAPI(generics.ListCreateAPIView):
         # Save the new object
         instance = serializer.save()
 
-        # Construct email subject and message
-        subject = 'New Vendor Update Created'
-        message = f"A new vendor update has been created with details:\n\n{
-            serializer.data}"
+        # Convert serializer data to DataFrame
+        df = pd.DataFrame([serializer.data])
+
+        table_data = {
+            "Field":  [
+                'Payment Method',
+                'Payment Cycle',
+                'Number',
+                'Receiver Name',
+                'Account Manager',
+                'Fully Refended',
+                'Penalized',
+                'Emails',
+            ],
+            'Old Value':    [
+                df.loc[0, 'old_payment_method'],
+                df.loc[0, 'old_payment_cycle'],
+                df.loc[0, 'old_number'],
+                df.loc[0, 'old_receiver_name'],
+                df.loc[0, 'old_account_manager'],
+                df.loc[0, 'old_fully_refended'],
+                df.loc[0, 'old_penalized'],
+                df.loc[0, 'old_emails'],
+            ],
+            "New Value": [
+                df.loc[0, 'new_payment_method'],
+                df.loc[0, 'new_payment_cycle'],
+                df.loc[0, 'new_number'],
+                df.loc[0, 'new_receiver_name'],
+                df.loc[0, 'new_account_manager'],
+                df.loc[0, 'new_fully_refended'],
+                df.loc[0, 'new_panelized'],
+                df.loc[0, 'new_emails'],
+            ],
+        }
+
+        # Convert table_data to DataFrame
+        df_table = pd.DataFrame(table_data)
+
+        # Convert DataFrame to HTML table
+        df_html = df_table.to_html( index=False, escape=False)
+
+        vendor_name = df.loc[0, 'vendor_name']
+        vendor_id = df.loc[0, 'vendor_id']
+        created_by = df.loc[0, 'created_by']
+        subject_title = f"{
+            vendor_id} - {vendor_name} New Update Created By {created_by} ."
+
+        # Construct email subject
+        subject = subject_title
+
+        # Render email message template with HTML table
+        message = render_to_string('email_template.html', {'df_html': df_html})
 
         # Send email
-        # Replace with client's email address
-        recipient_list = ['zakarya.bilal@baly.iq', 'omar.mahir@baly.iq']
+        recipient_list = ['zakarya.bilal@baly.iq',
+                          #    'omar.mahir@baly.iq'
+                          ]
         send_mail(
             subject,
             message,
             'zakarya.bilal@baly.iq',
             recipient_list,
+            html_message=message,  # Set html_message parameter to include HTML content
             fail_silently=False,
         )
 
