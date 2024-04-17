@@ -22,6 +22,12 @@ class PaymentMethod(models.Model):
         return self.title
 
 
+class VendorIDName(models.Model):
+    id = models.CharField(primary_key=True, unique=True, max_length=255)
+    arName = models.CharField(max_length=255)
+    enName = models.CharField(max_length=255)
+
+
 class Vendor(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     vendor_id = models.CharField(max_length=255)
@@ -66,6 +72,8 @@ class VendorUpdates(models.Model):
     new_fully_refended = models.CharField(max_length=255)
     old_penalized = models.CharField(max_length=255)
     new_panelized = models.CharField(max_length=255)
+    old_commission_after_discount = models.CharField(max_length=255)
+    new_commission_after_discount = models.CharField(max_length=255)
     old_emails = models.CharField(max_length=255)
     new_emails = models.CharField(max_length=255)
     created_by = models.ForeignKey(
@@ -100,7 +108,7 @@ class Payment(models.Model):
 
 class PaidOrders(models.Model):
     # id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    order_id = models.CharField(primary_key=True,max_length=255, unique=True)
+    order_id = models.CharField(primary_key=True, max_length=255, unique=True)
     order_date = models.DateTimeField()
     sub_total = models.FloatField()
     # vendor = models.CharField(max_length=255)

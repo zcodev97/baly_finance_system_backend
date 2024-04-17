@@ -1,26 +1,16 @@
-from django.db.models import Sum
-from django.forms import model_to_dict
-from django.utils.dateparse import parse_date
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework import generics, status
-from django.contrib.auth import authenticate
-from django.shortcuts import get_object_or_404
-import pandas as pd
 from django.template.loader import render_to_string
-
 from .models import (Vendor, Payment, PaymentCycle,
-                     PaymentMethod, PaidOrders, VendorUpdates)
+                     PaymentMethod, PaidOrders, VendorUpdates,VendorIDName)
 from .serializers import (VendorSerializer, PaymentSerializer,
                           PaymentCycleSerializer, CreatePaymentSerializer,
                           VendorIDNameSerializer, PaidOrdersSerializer,
                           PaymentMethodSerializer,
                           VendorIDNameSerializer, VendorUpdateSerializer,
-                          GetVendorUpdatesSerializer, CreateVendorUpdateSerializer)
-from rest_framework.exceptions import NotFound
+                          GetVendorUpdatesSerializer,
+                          CreateVendorUpdateSerializer,
+                          VendorIDNameSerializer)
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.conf import settings
 from core.models import User
 import pandas as pd
 import pandas_gbq
@@ -69,8 +59,8 @@ class CreateVendorUpdateAPI(generics.ListCreateAPIView):
 
         table_data = {
             "Field": [
-                'Payment Method',
                 'Payment Cycle',
+                'Payment Method',
                 'Number',
                 'Receiver Name',
                 'Account Manager',
@@ -80,8 +70,8 @@ class CreateVendorUpdateAPI(generics.ListCreateAPIView):
                 'Emails',
             ],
             'Old Value': [
-                df.loc[0, 'old_payment_method'],
                 df.loc[0, 'old_payment_cycle'],
+                df.loc[0, 'old_payment_method'],
                 df.loc[0, 'old_number'],
                 df.loc[0, 'old_receiver_name'],
                 df.loc[0, 'old_account_manager'],
@@ -91,8 +81,8 @@ class CreateVendorUpdateAPI(generics.ListCreateAPIView):
                 df.loc[0, 'old_emails'],
             ],
             "New Value": [
-                df.loc[0, 'new_payment_method'],
                 df.loc[0, 'new_payment_cycle'],
+                df.loc[0, 'new_payment_method'],
                 df.loc[0, 'new_number'],
                 df.loc[0, 'new_receiver_name'],
                 df.loc[0, 'new_account_manager'],
@@ -111,8 +101,9 @@ class CreateVendorUpdateAPI(generics.ListCreateAPIView):
 
         vendor_name = df.loc[0, 'vendor_name']
         # vendor_id = df.loc[0, 'vendor_id']
-        created_by = df.loc[0, 'created_by']
-        subject_title = f"New Update On {vendor_name}   Created By {created_by} ."
+        created_by_id = df.loc[0, 'created_by']
+        created_by_username = User.objects.get(id=created_by_id).username
+        subject_title = f"New Update On {vendor_name} Created By {created_by_username}"
 
         # Construct email subject
         subject = subject_title
@@ -122,12 +113,12 @@ class CreateVendorUpdateAPI(generics.ListCreateAPIView):
 
         # Send email
         recipient_list = ['zakarya.bilal@baly.iq',
-                          # 'omar.mahir@baly.iq'
+                          'omar.mahir@baly.iq'
                           ]
         send_mail(
             subject,
             message,
-            'zakarya.bilal@baly.iq',
+            'food-bi@baly.iq',
             recipient_list,
             html_message=message,  # Set html_message parameter to include HTML content
             fail_silently=False,
@@ -289,7 +280,8 @@ class VendorPaymentsSummaryAPI(generics.ListCreateAPIView):
         end_date = request.query_params.get('end_date')
 
         query = f"""
-           SELECT order_id, order_date,vendor, vendor_id,subtotal,to_be_paid FROM `peak-brook-355811.food_prod_public.vendor_payment`
+           SELECT order_id, order_date,vendor, vendor_id,subtotal,to_be_paid FROM 
+           `peak-brook-355811.food_prod_public.vendor_payment`
            WHERE order_date BETWEEN '{start_date} 00:00:00' AND '{end_date} 23:59:59'
            """
         df = pandas_gbq.read_gbq(query, project_id='peak-brook-355811')
@@ -375,3 +367,35 @@ class VendorPaymentsSummaryAPI(generics.ListCreateAPIView):
             final_results.append(result_item)
 
         return Response(final_results)
+
+
+class UpdateVendorTableFromBigQueryAPI(generics.ListCreateAPIView):
+    queryset = VendorIDName.objects.all()
+    serializer_class = VendorIDNameSerializer
+    permission_classes = [IsAuthenticated, DjangoModelPermissions]
+    paginator = PageNumberPagination()
+    paginator.page_size = None
+
+    def list(self, request, *args, **kwargs):
+
+        query = f""" SELECT id,enName,arName  from `food_prod_public.vendors` """
+        df = pandas_gbq.read_gbq(query, project_id='peak-brook-355811')
+
+        # Replace NaN with None for database insertion compatibility
+        df = df.where(pd.notnull(df), None)
+
+        # Insert new data into OnlyVendor model
+        new_records = 0
+        for _, row in df.iterrows():
+            # Check if the vendor already exists
+            if not VendorIDName.objects.filter(id=row['id']).exists():
+                VendorIDName.objects.create(
+                    id=row['id'],
+                    enName=row['enName'],
+                    arName=row['arName']
+                )
+                new_records += 1
+
+        # Response message
+        response_msg = f"Inserted {new_records} new vendor(s)."
+        return Response({'message': response_msg, 'new_records': new_records})

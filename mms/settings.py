@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'core',
     'drf_spectacular',
     'easyaudit',
+
 ]
 
 MIDDLEWARE = [
@@ -209,5 +210,5 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'zakarya.bilal@baly.iq'
-EMAIL_HOST_PASSWORD = 'pzky nrbs xzkm obnw'
+EMAIL_HOST_USER = 'food-bi@baly.iq'
+EMAIL_HOST_PASSWORD = 'hpdr xpdc iiea gfca'

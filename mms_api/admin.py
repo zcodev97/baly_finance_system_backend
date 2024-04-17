@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (Vendor, Payment,
-                     PaymentCycle, PaidOrders, PaymentMethod, VendorUpdates)
+                     PaymentCycle, PaidOrders, PaymentMethod, VendorUpdates, VendorIDName)
 from django.utils.html import format_html
 
 import datetime
@@ -14,6 +14,14 @@ class VendorUpdatesAdmin(admin.ModelAdmin):
     ordering = ('-created_at',)  # Default ordering
     search_fields = ['vendor_id']  # Fields to search by
     list_display = ['vendor_id']
+
+
+@admin.register(VendorIDName)
+class VendorIDNameAdmin(admin.ModelAdmin):
+    list_per_page = 5  # Items per page
+    ordering = ('id',)  # Default ordering
+    search_fields = ['id']  # Fields to search by
+    list_display = ['id','arName','enName']
 
 
 @admin.register(Vendor)
@@ -73,23 +81,6 @@ class PaymentMethodAdmin(admin.ModelAdmin):
     list_per_page = 5  # Items per page
     search_fields = ['title']  # Fields to search by
     list_display = ['title']
-
-
-# @admin.register(PaidOrders)
-# class PaidOrderseAdmin(admin.ModelAdmin):
-#         # Execute SQL query and load data into DataFrame
-#     df = pandas_gbq.read_gbq("""
-#       SELECT o.id ,o.totalValue , o.subTotal,o.created_at, v.arName
-#     FROM `peak-brook-355811.food_prod_public.orders` o inner  join  `peak-brook-355811.food_prod_public.vendors`  v on
-#     o.vendorID = v.id
-#      LIMIT 10
-#       """,
-#                                project_id='peak-brook-355811')
-#     print(df)
-#     list_per_page = 5  # Items per page
-#     ordering = ('-created_at',)  # Default ordering
-#     search_fields = ['payment_id']  # Fields to search by
-#     list_display = [field.name for field in PaidOrders._meta.get_fields() if field.name != 'id']
 
 
 @admin.register(PaidOrders)

@@ -7,7 +7,7 @@ from mms_api.apiviews import (VendorAPI, UploadVendorsAsExcel, CreatePaymentAPI,
                               VendorPaymentsSummaryAPI, VendorIdNameAPI,
                               UpdateVendorAPI, VendorByIdAPI,
                               GetVendorUpdatesAPI, CreateVendorUpdateAPI,
-                              GetSingleVendorUpdatesAPI
+                              GetSingleVendorUpdatesAPI,UpdateVendorTableFromBigQueryAPI
                               )
 from core.serializers import CustomUserSerializer
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
@@ -50,6 +50,7 @@ urlpatterns = [
          SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     # mms api
     # all vendors
+    path('update_vendors_from_big_query/', UpdateVendorTableFromBigQueryAPI.as_view(), name="update all vendors"),
     path('vendors/', VendorAPI.as_view(), name="all vendors"),
     path('vendor/<int:pk>', VendorByIdAPI.as_view(), name="single vendor"),
     path('create_vendor_update_log/', CreateVendorUpdateAPI.as_view(),
