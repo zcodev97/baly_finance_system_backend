@@ -292,8 +292,6 @@ class VendorPaymentsSummaryAPI(generics.ListCreateAPIView):
            """
         df = pandas_gbq.read_gbq(query, project_id='peak-brook-355811')
 
-        print(query)
-
         # Replace NaN (null in DataFrame) with None for direct JSON serialization
         df.replace({np.nan: None}, inplace=True)
 
@@ -335,33 +333,35 @@ class VendorPaymentsSummaryAPI(generics.ListCreateAPIView):
         # Prepare the final results, adding start_date, end_date, order count, orders, and is_paid for each vendor
         final_results = []
         for item in grouped_sum.itertuples(index=False):
+
             vendor_info = vendor_details.get(str(item.vendor_id), {})
-            if item.vendor_id not in paid_vendors:  # Only include vendors that are not in the paid_vendors list
-                # Retrieve existing order IDs for this vendor and date range
-                existing_orders = Payment.objects.filter(
-                    vendor_id=item.vendor_id
-                ).values_list('orders', flat=True)
+            # Retrieve existing order IDs for this vendor and date range
+            existing_orders = Payment.objects.filter(
+                vendor_id=item.vendor_id,
+                start_date=start_date,
+                end_date=end_date
+            ).values_list('orders__order_id', flat=True)
 
-                new_orders = [
-                    order for order in item.orders if order['order_id'] not in existing_orders]
+            new_orders = [
+                order for order in item.orders if order['order_id'] not in existing_orders]
 
-                new_orders_list = [
-                    {
-                        'order_id': order['order_id'],
-                        'order_date': order['order_date'],
-                        'subtotal': order['subtotal']
-                    }
-                    for order in new_orders
-                ]
-
-                result_item = {
-                    **item._asdict(),
-                    **vendor_info,
-                    'start_date': start_date,
-                    'end_date': end_date,
-                    'is_paid': False,
-                    'orders': new_orders_list,  # Updated orders list
+            new_orders_list = [
+                {
+                    'order_id': order['order_id'],
+                    'order_date': order['order_date'],
+                    'subtotal': order['subtotal']
                 }
-                final_results.append(result_item)
+                for order in new_orders
+            ]
+
+            result_item = {
+                **item._asdict(),
+                **vendor_info,
+                'start_date': start_date,
+                'end_date': end_date,
+                'is_paid': False,
+                'orders': new_orders_list,  # Updated orders list
+            }
+            final_results.append(result_item)
 
         return Response(final_results)
