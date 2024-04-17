@@ -68,7 +68,7 @@ class CreateVendorUpdateAPI(generics.ListCreateAPIView):
         df = pd.DataFrame([serializer.data])
 
         table_data = {
-            "Field":  [
+            "Field": [
                 'Payment Method',
                 'Payment Cycle',
                 'Number',
@@ -76,9 +76,10 @@ class CreateVendorUpdateAPI(generics.ListCreateAPIView):
                 'Account Manager',
                 'Fully Refended',
                 'Penalized',
+                'Commission After Discount',
                 'Emails',
             ],
-            'Old Value':    [
+            'Old Value': [
                 df.loc[0, 'old_payment_method'],
                 df.loc[0, 'old_payment_cycle'],
                 df.loc[0, 'old_number'],
@@ -86,6 +87,7 @@ class CreateVendorUpdateAPI(generics.ListCreateAPIView):
                 df.loc[0, 'old_account_manager'],
                 df.loc[0, 'old_fully_refended'],
                 df.loc[0, 'old_penalized'],
+                df.loc[0, 'old_commission_after_discount'],
                 df.loc[0, 'old_emails'],
             ],
             "New Value": [
@@ -96,6 +98,7 @@ class CreateVendorUpdateAPI(generics.ListCreateAPIView):
                 df.loc[0, 'new_account_manager'],
                 df.loc[0, 'new_fully_refended'],
                 df.loc[0, 'new_panelized'],
+                df.loc[0, 'new_commission_after_discount'],
                 df.loc[0, 'new_emails'],
             ],
         }
@@ -107,10 +110,9 @@ class CreateVendorUpdateAPI(generics.ListCreateAPIView):
         df_html = df_table.to_html(index=False, escape=False)
 
         vendor_name = df.loc[0, 'vendor_name']
-        vendor_id = df.loc[0, 'vendor_id']
+        # vendor_id = df.loc[0, 'vendor_id']
         created_by = df.loc[0, 'created_by']
-        subject_title = f"{
-            vendor_id} - {vendor_name} New Update Created By {created_by} ."
+        subject_title = f"New Update On {vendor_name}   Created By {created_by} ."
 
         # Construct email subject
         subject = subject_title
@@ -120,7 +122,7 @@ class CreateVendorUpdateAPI(generics.ListCreateAPIView):
 
         # Send email
         recipient_list = ['zakarya.bilal@baly.iq',
-                          #    'omar.mahir@baly.iq'
+                          # 'omar.mahir@baly.iq'
                           ]
         send_mail(
             subject,
@@ -287,7 +289,7 @@ class VendorPaymentsSummaryAPI(generics.ListCreateAPIView):
         end_date = request.query_params.get('end_date')
 
         query = f"""
-           SELECT * FROM `peak-brook-355811.food_prod_public.vendor_payment`
+           SELECT order_id, order_date,vendor, vendor_id,subtotal,to_be_paid FROM `peak-brook-355811.food_prod_public.vendor_payment`
            WHERE order_date BETWEEN '{start_date} 00:00:00' AND '{end_date} 23:59:59'
            """
         df = pandas_gbq.read_gbq(query, project_id='peak-brook-355811')
@@ -336,14 +338,22 @@ class VendorPaymentsSummaryAPI(generics.ListCreateAPIView):
 
             vendor_info = vendor_details.get(str(item.vendor_id), {})
             # Retrieve existing order IDs for this vendor and date range
-            existing_orders = Payment.objects.filter(
-                vendor_id=item.vendor_id,
-                start_date=start_date,
-                end_date=end_date
-            ).values_list('orders__order_id', flat=True)
+            # existing_orders = Payment.objects.filter(
+            #     vendor_id=item.vendor_id,
+            # ).values_list('orders', flat=True)
+            #
+            # new_orders = [
+            #     order for order in item.orders if order['order_id'] not in existing_orders]
 
-            new_orders = [
-                order for order in item.orders if order['order_id'] not in existing_orders]
+            existing_vendor_orders = Payment.objects.filter(
+                vendor_id=item.vendor_id,
+            ).values_list('orders', flat=True)
+
+            new_orders = []
+            for order in item.orders:
+                for ex_order in existing_vendor_orders:
+                    if order['order_id'] not in ex_order:
+                        new_orders.append(order)
 
             new_orders_list = [
                 {
@@ -360,7 +370,7 @@ class VendorPaymentsSummaryAPI(generics.ListCreateAPIView):
                 'start_date': start_date,
                 'end_date': end_date,
                 'is_paid': False,
-                'orders': new_orders_list,  # Updated orders list
+                'orders': new_orders_list,
             }
             final_results.append(result_item)
 
