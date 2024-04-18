@@ -6,13 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="2c9eecc9-9829-419c-a229-ad459bc4d677" name="Changes" comment="first init">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mms/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/mms/settings.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mms/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/mms/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mms_api/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/mms_api/admin.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mms_api/apiviews.py" beforeDir="false" afterPath="$PROJECT_DIR$/mms_api/apiviews.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mms_api/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/mms_api/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mms_api/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/mms_api/serializers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mms_api/templates/email_template.html" beforeDir="false" afterPath="$PROJECT_DIR$/mms_api/templates/email_template.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

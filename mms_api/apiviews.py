@@ -1,15 +1,21 @@
 from rest_framework import generics, status
 from django.template.loader import render_to_string
 from .models import (Vendor, Payment, PaymentCycle,
-                     PaymentMethod, PaidOrders, VendorUpdates,VendorIDName)
+                     PaymentMethod, PaidOrders,
+                     VendorUpdates,VendorIDName,
+                     VendorDetails)
 from .serializers import (VendorSerializer, PaymentSerializer,
-                          PaymentCycleSerializer, CreatePaymentSerializer,
-                          VendorIDNameSerializer, PaidOrdersSerializer,
+                          PaymentCycleSerializer,
+                          CreatePaymentSerializer,
+                          VendorIDNameSerializer,
+                          PaidOrdersSerializer,
                           PaymentMethodSerializer,
-                          VendorIDNameSerializer, VendorUpdateSerializer,
+                          VendorIDNameSerializer,
+                          VendorUpdateSerializer,
                           GetVendorUpdatesSerializer,
                           CreateVendorUpdateSerializer,
-                          VendorIDNameSerializer)
+                          VendorIDNameSerializer,
+                          VendorDetailsSerializer)
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 from core.models import User
 import pandas as pd
@@ -225,8 +231,8 @@ class CreatePaymentAPI(generics.ListCreateAPIView):
 
 
 class UploadVendorsAsExcel(generics.ListCreateAPIView):
-    queryset = Vendor.objects.all()
-    serializer_class = VendorSerializer
+    queryset = VendorDetails.objects.all()
+    serializer_class = VendorDetailsSerializer
 
     def create(self, request, *args, **kwargs):
         file = request.FILES.get('file')
@@ -237,30 +243,22 @@ class UploadVendorsAsExcel(generics.ListCreateAPIView):
             df = pd.read_excel(file)
             for index, row in df.iterrows():
 
-                account_manager = row['account_manager']
-                pay_type = row['pay_type']
-                pay_period = row['pay_period']
+                vendor_instance = VendorIDName.objects.get(id=row['vendor_id'])
+                pay_type_id = PaymentMethod.objects.get(title=row['pay_type'].strip()).id
+                pay_period_id = PaymentCycle.objects.get(title=row['pay_period'].strip()).id
 
-                #               get account manager id
-                account_manager_id = User.objects.get(
-                    username=account_manager).id
-                pay_type_id = PaymentMethod.objects.get(title=pay_type).id
-                pay_period_id = PaymentCycle.objects.get(title=pay_period).id
-
-                if Vendor.objects.filter(vendor_id=row['vendor_id']).exists():
+                if VendorDetails.objects.filter(vendor_id=row['vendor_id']).exists():
                     continue
 
-                vendors = Vendor.objects.create(
-                    vendor_id=row['vendor_id'],
-                    name=row['name'],
-                    account_manager_id=account_manager_id,
+                vendors = VendorDetails.objects.create(
+                    vendor_id=vendor_instance,
+                    account_manager_id=row['account_manager'],
                     pay_period_id=pay_period_id,
                     pay_type_id=pay_type_id,
                     number=row['number'],
-                    fully_refunded=False,
+                    fully_refunded=row['fully_refunded'],
+                    commission_after_discount=row['commission_after_discount'],
                     penalized=False,
-                    owner_name=row['owner_name'],
-                    owner_phone=row['owner_phone'],
                     created_by=request.user,
                 )
                 vendors.save()

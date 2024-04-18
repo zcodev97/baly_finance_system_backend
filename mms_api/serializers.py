@@ -3,7 +3,10 @@ from rest_framework.authtoken.models import Token
 from django.conf import settings
 from .models import (Vendor, Payment,
                      PaymentMethod, PaymentCycle,
-                     PaidOrders, VendorUpdates,VendorIDName)
+                     PaidOrders,
+                     VendorUpdates,
+                     VendorIDName,
+                     VendorDetails,)
 
 from core.serializers import CustomUserSerializer
 
@@ -17,13 +20,6 @@ class VendorCustomSerializer(serializers.ModelSerializer):
         model = Vendor
         fields = ['name', 'total_to_be_paid', 'orders']
 
-
-class VendorIDNameSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = VendorIDName
-        fields = '__all__'
-
-
 class PaymentMethodSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentMethod
@@ -34,6 +30,28 @@ class PaymentCycleSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentCycle
         fields = '__all__'
+
+
+class VendorDetailsSerializer(serializers.ModelSerializer):
+    pay_period = PaymentCycleSerializer(read_only=True)
+    pay_type = PaymentMethodSerializer(read_only=True)
+    account_manager_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = VendorDetails
+        fields = ['vendor_id', 'pay_period',
+                  'pay_type', 'number',
+                  'fully_refunded',
+                  'penalized',
+                  'commission_after_discount',
+                  'account_manager']
+
+
+class VendorIDNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VendorIDName
+        fields = '__all__'
+
 
 
 class GetVendorUpdatesSerializer(serializers.ModelSerializer):

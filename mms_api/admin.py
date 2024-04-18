@@ -1,6 +1,8 @@
 from django.contrib import admin
 from .models import (Vendor, Payment,
-                     PaymentCycle, PaidOrders, PaymentMethod, VendorUpdates, VendorIDName)
+                     PaymentCycle, PaidOrders,
+                     PaymentMethod, VendorUpdates,
+                     VendorIDName, VendorDetails)
 from django.utils.html import format_html
 
 import datetime
@@ -21,7 +23,17 @@ class VendorIDNameAdmin(admin.ModelAdmin):
     list_per_page = 5  # Items per page
     ordering = ('id',)  # Default ordering
     search_fields = ['id']  # Fields to search by
-    list_display = ['id','arName','enName']
+    list_display = ['id', 'arName', 'enName']
+
+
+@admin.register(VendorDetails)
+class VendorDetailsAdmin(admin.ModelAdmin):
+    list_per_page = 5  # Items per page
+    ordering = ('vendor_id',)  # Default ordering
+    search_fields = ['vendor_id']  # Fields to search by
+    list_display = [field.name for field in VendorDetails._meta.get_fields(
+    ) if field.name != 'id'
+                    ]
 
 
 @admin.register(Vendor)

@@ -27,6 +27,28 @@ class VendorIDName(models.Model):
     arName = models.CharField(max_length=255)
     enName = models.CharField(max_length=255)
 
+    def __str__(self):
+        return self.enName
+
+
+class VendorDetails(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    vendor_id = models.ForeignKey(VendorIDName, on_delete=models.CASCADE)
+    pay_period = models.ForeignKey(PaymentCycle, on_delete=models.CASCADE)
+    pay_type = models.ForeignKey(PaymentMethod, on_delete=models.CASCADE)
+    number = models.CharField(max_length=255, blank=True)
+    payment_receiver_name = models.CharField(max_length=255, blank=True)
+    owner_email_json = models.JSONField(default=list, blank=True)
+    fully_refunded = models.BooleanField(blank=True)
+    penalized = models.BooleanField(blank=True)
+    commission_after_discount = models.BooleanField(blank=True)
+    owner_email_json = models.JSONField(default=list,blank=True)
+    account_manager = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='account_manager_vendor_details', default=1)
+    created_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, default=1)
+
 
 class Vendor(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
