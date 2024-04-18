@@ -79,10 +79,6 @@ class GetVendorUpdatesAPI(generics.ListCreateAPIView):
     serializer_class = GetVendorUpdatesSerializer
     permission_classes = [IsAuthenticated, DjangoModelPermissions]
 
-    # def get_queryset(self):
-    #     queryset = super().get_queryset()
-    #     return queryset.order_by('created_at')  # Order by vendor_id
-
 
 class GetSingleVendorUpdatesAPI(generics.ListCreateAPIView):
     serializer_class = GetVendorUpdatesSerializer
@@ -220,6 +216,12 @@ class VendorAPI(generics.ListCreateAPIView):
 
 class UpdateVendorAPI(generics.RetrieveUpdateAPIView):
     lookup_field = 'vendor_id'
+    queryset = VendorDetails.objects.all()
+    serializer_class = VendorDetailsUpdateSerializer
+    permission_classes = [IsAuthenticated, DjangoModelPermissions]
+
+
+class AddVendorDetailsAPI(generics.ListCreateAPIView):
     queryset = VendorDetails.objects.all()
     serializer_class = VendorDetailsUpdateSerializer
     permission_classes = [IsAuthenticated, DjangoModelPermissions]

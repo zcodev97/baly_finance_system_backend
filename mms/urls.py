@@ -8,7 +8,7 @@ from mms_api.apiviews import (VendorAPI, UploadVendorsAsExcel, CreatePaymentAPI,
                               UpdateVendorAPI, VendorByIdAPI,
                               GetVendorUpdatesAPI, CreateVendorUpdateAPI,
                               GetSingleVendorUpdatesAPI, UpdateVendorTableFromBigQueryAPI, VendorDetailsAPI,
-                              UnmatchedVendorsAPIView, MatchedVendorsAPIView
+                              UnmatchedVendorsAPIView, MatchedVendorsAPIView, AddVendorDetailsAPI
                               )
 from core.serializers import CustomUserSerializer
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
@@ -58,7 +58,8 @@ urlpatterns = [
     # update vendor info
     path('update_vendor/<int:vendor_id>',
          UpdateVendorAPI.as_view(), name="update vendor"),
-
+    path('add_vendor_details_info/',
+         AddVendorDetailsAPI.as_view(), name="add vendor details info"),
     # all vendors
     path('update_vendors_from_big_query/', UpdateVendorTableFromBigQueryAPI.as_view(), name="update all vendors"),
     path('vendors/', VendorAPI.as_view(), name="all vendors"),

@@ -94,7 +94,7 @@ class VendorDetailsUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = VendorDetails
         fields = ['vendor_id', 'pay_period', 'pay_type', 'number',
-                  'owner_email_json', 'fully_refunded', 'penalized',
+                  'owner_email_json', 'fully_refunded', 'penalized','payment_receiver_name',
                   'commission_after_discount',
                   'account_manager', 'created_at',
                   ]
