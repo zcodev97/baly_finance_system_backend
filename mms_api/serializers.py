@@ -6,7 +6,7 @@ from .models import (Vendor, Payment,
                      PaidOrders,
                      VendorUpdates,
                      VendorIDName,
-                     VendorDetails,)
+                     VendorDetails, )
 
 from core.serializers import CustomUserSerializer
 
@@ -20,6 +20,7 @@ class VendorCustomSerializer(serializers.ModelSerializer):
         model = Vendor
         fields = ['name', 'total_to_be_paid', 'orders']
 
+
 class PaymentMethodSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentMethod
@@ -32,26 +33,41 @@ class PaymentCycleSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class VendorDetailsSerializer(serializers.ModelSerializer):
-    pay_period = PaymentCycleSerializer(read_only=True)
-    pay_type = PaymentMethodSerializer(read_only=True)
-    account_manager_name = serializers.SerializerMethodField()
-
-    class Meta:
-        model = VendorDetails
-        fields = ['vendor_id', 'pay_period',
-                  'pay_type', 'number',
-                  'fully_refunded',
-                  'penalized',
-                  'commission_after_discount',
-                  'account_manager']
+class UnmatchedVendorCountSerializer(serializers.Serializer):
+    unmatched_count = serializers.IntegerField()
 
 
 class VendorIDNameSerializer(serializers.ModelSerializer):
     class Meta:
         model = VendorIDName
-        fields = '__all__'
+        fields = ['id', 'arName', 'enName']
 
+
+class VendorDetailsSerializer(serializers.ModelSerializer):
+    vendor_id = VendorIDNameSerializer()
+    pay_period = PaymentCycleSerializer(read_only=True)
+    pay_type = PaymentMethodSerializer(read_only=True)
+    account_manager_name = serializers.SerializerMethodField()
+
+    def get_account_manager_name(self, obj):
+        return obj.account_manager.username if obj.account_manager else None
+
+    class Meta:
+        model = VendorDetails
+        fields = [
+            'vendor_id',  # This now uses the nested serializer
+            'pay_period',
+            'pay_type',
+            'number',
+            'payment_receiver_name',
+            'owner_email_json',
+            'fully_refunded',
+            'penalized',
+            'commission_after_discount',
+            'account_manager_name',  # Assuming you want the name instead of just the ID
+            'created_at',
+            'created_by'
+        ]
 
 
 class GetVendorUpdatesSerializer(serializers.ModelSerializer):
@@ -74,21 +90,29 @@ class CreateVendorUpdateSerializer(serializers.ModelSerializer):
                   ]
 
 
+class VendorDetailsUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VendorDetails
+        fields = ['vendor_id', 'pay_period', 'pay_type', 'number',
+                  'owner_email_json', 'fully_refunded', 'penalized',
+                  'commission_after_discount',
+                  'account_manager', 'created_at',
+                  ]
+
+
 class VendorSerializer(serializers.ModelSerializer):
-    # Assuming this is your payment_cycle serializer
     pay_period = PaymentCycleSerializer(read_only=True)
-    # Assuming this is your payment_method serializer
     pay_type = PaymentMethodSerializer(read_only=True)
-    # Use SerializerMethodField
-    account_manager_name = serializers.SerializerMethodField()
+    account_manager = serializers.SerializerMethodField()
 
     class Meta:
         model = Vendor
-        fields = ['vendor_id', 'name', 'pay_period', 'pay_type', 'number',
-                  'owner_name', 'owner_phone', 'owner_email_json',
+        fields = ['vendor_id', 'pay_period',
+                  'pay_type', 'number',
+                  'owner_email_json',
                   'fully_refunded', 'penalized',
                   'commission_after_discount',
-                  'account_manager_name', 'created_at',
+                  'account_manager', 'created_at',
                   ]
 
     def get_account_manager_name(self, obj):
@@ -97,21 +121,6 @@ class VendorSerializer(serializers.ModelSerializer):
             return obj.account_manager.username  # Access the username attribute
         else:
             return None  # Return None or a default value if account_manager is missing
-
-
-class VendorUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Vendor
-        fields = ['vendor_id', 'name', 'pay_period', 'pay_type', 'number',
-                  'owner_name', 'owner_phone', 'owner_email_json', 'fully_refunded', 'penalized','commission_after_discount',
-                  'account_manager', 'created_at',
-                  ]
-
-
-class VendorIDNameSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Vendor
-        fields = ['vendor_id', 'name']
 
 
 class PaymentSerializer(serializers.ModelSerializer):

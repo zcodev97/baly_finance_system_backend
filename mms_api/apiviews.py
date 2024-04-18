@@ -1,8 +1,10 @@
 from rest_framework import generics, status
 from django.template.loader import render_to_string
+from rest_framework.views import APIView
+
 from .models import (Vendor, Payment, PaymentCycle,
                      PaymentMethod, PaidOrders,
-                     VendorUpdates,VendorIDName,
+                     VendorUpdates, VendorIDName,
                      VendorDetails)
 from .serializers import (VendorSerializer, PaymentSerializer,
                           PaymentCycleSerializer,
@@ -11,21 +13,65 @@ from .serializers import (VendorSerializer, PaymentSerializer,
                           PaidOrdersSerializer,
                           PaymentMethodSerializer,
                           VendorIDNameSerializer,
-                          VendorUpdateSerializer,
+                          VendorDetailsUpdateSerializer,
                           GetVendorUpdatesSerializer,
                           CreateVendorUpdateSerializer,
                           VendorIDNameSerializer,
-                          VendorDetailsSerializer)
+                          VendorDetailsSerializer, UnmatchedVendorCountSerializer)
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 from core.models import User
 import pandas as pd
 import pandas_gbq
 import numpy as np
-from django.db.models import Q
+from django.db.models import Count, Q, OuterRef, Exists
 from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from django.core.mail import send_mail
+
+
+# get vendors count that does not have details
+class UnmatchedVendorsAPIView(APIView):
+    permission_classes = [IsAuthenticated, DjangoModelPermissions]
+
+    def get_queryset(self):
+        # Create a subquery for VendorDetails that refer to VendorIDName
+        vendor_details_subquery = VendorDetails.objects.filter(vendor_id=OuterRef('pk'))
+        # Get all VendorIDName that do not have a corresponding VendorDetails
+        return VendorIDName.objects.annotate(
+            is_matched=Exists(vendor_details_subquery)
+        ).filter(is_matched=False)
+
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()  # Use the get_queryset method
+        # Serialize the data
+        serializer = VendorIDNameSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class MatchedVendorsAPIView(APIView):
+    permission_classes = [IsAuthenticated, DjangoModelPermissions]
+
+    def get_queryset(self):
+        # Create a subquery for VendorDetails that refer to VendorIDName
+        vendor_details_subquery = VendorDetails.objects.filter(vendor_id=OuterRef('pk'))
+        # Get all VendorIDName that do not have a corresponding VendorDetails
+        return VendorIDName.objects.annotate(
+            is_matched=Exists(vendor_details_subquery)
+        ).filter(is_matched=True)
+
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()  # Use the get_queryset method
+        # Serialize the data
+        serializer = VendorIDNameSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+# get all vendors with its details
+class VendorDetailsAPI(generics.ListCreateAPIView):
+    queryset = VendorDetails.objects.all().order_by('-vendor_id')
+    serializer_class = VendorDetailsSerializer
+    permission_classes = [IsAuthenticated, DjangoModelPermissions]
 
 
 class GetVendorUpdatesAPI(generics.ListCreateAPIView):
@@ -132,7 +178,7 @@ class CreateVendorUpdateAPI(generics.ListCreateAPIView):
 
 
 class VendorIdNameAPI(generics.ListCreateAPIView):
-    queryset = Vendor.objects.all()
+    queryset = VendorIDName.objects.all()
     serializer_class = VendorIDNameSerializer
     permission_classes = [IsAuthenticated, DjangoModelPermissions]
     paginator = PageNumberPagination()
@@ -140,13 +186,13 @@ class VendorIdNameAPI(generics.ListCreateAPIView):
 
 
 class VendorByIdAPI(generics.ListCreateAPIView):
-    serializer_class = VendorSerializer
+    serializer_class = VendorDetailsSerializer
     permission_classes = [IsAuthenticated, DjangoModelPermissions]
 
     def get_queryset(self):
         # Assuming you're passing vendor_id as a URL parameter
         vendor_id = self.kwargs.get('pk')
-        queryset = Vendor.objects.filter(vendor_id=vendor_id)
+        queryset = VendorDetails.objects.filter(vendor_id=vendor_id)
         return queryset
 
 
@@ -174,8 +220,8 @@ class VendorAPI(generics.ListCreateAPIView):
 
 class UpdateVendorAPI(generics.RetrieveUpdateAPIView):
     lookup_field = 'vendor_id'
-    queryset = Vendor.objects.all()
-    serializer_class = VendorUpdateSerializer
+    queryset = VendorDetails.objects.all()
+    serializer_class = VendorDetailsUpdateSerializer
     permission_classes = [IsAuthenticated, DjangoModelPermissions]
 
 
